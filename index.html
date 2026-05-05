@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🧦 袜子配对小达人 - 带声音反馈</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #a1d4f0 0%, #e0f0fa 100%);
+            font-family: 'Segoe UI', 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 1300px;
+            width: 100%;
+            background: #fff9ef;
+            border-radius: 80px 80px 60px 60px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 20px 25px 35px 25px;
+            transition: all 0.2s;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin: 0 0 5px 0;
+            color: #ff8c5a;
+            text-shadow: 3px 3px 0 #fce2b4;
+            letter-spacing: 2px;
+        }
+
+        .sub {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #5a7c8c;
+            margin-top: -8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #feebcc;
+            padding: 12px 25px;
+            border-radius: 50px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .score-box {
+            background: #2f6b47;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1.6rem;
+            box-shadow: inset 0 -2px 0 #1d452f, 0 5px 8px rgba(0,0,0,0.1);
+        }
+
+        .message-area {
+            background: #fdf8e7;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #cb6e2e;
+            border-left: 10px solid #ffb882;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .game-btn {
+            background: #ffaa66;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #442200;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 0 #b4622a;
+            font-family: inherit;
+        }
+
+        .game-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #b4622a;
+        }
+
+        .socks-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0 20px;
+        }
+
+        .sock-card {
+            background: #fef3e2;
+            width: 160px;
+            padding: 15px 10px 12px 10px;
+            border-radius: 45px;
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            text-align: center;
+            border: 3px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sock-card.selected {
+            border: 4px solid #ffbb44;
+            background: #fff3df;
+            transform: scale(0.98);
+            box-shadow: 0 0 0 3px #f5bc70, 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .sock-svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 12px;
+            filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.15));
+        }
+
+        .sock-attrs {
+            font-size: 0.85rem;
+            background: #e9dfc7;
+            padding: 5px 8px;
+            border-radius: 50px;
+            width: 100%;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #3f2a1a;
+        }
+
+        .difficulty-badge {
+            font-size: 0.7rem;
+            background: #ffbb99;
+            border-radius: 20px;
+            padding: 2px 8px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .paired {
+            opacity: 0.6;
+            filter: grayscale(0.2);
+            background: #d4d0b9;
+            cursor: default;
+            pointer-events: none;
+            text-decoration: line-through;
+            position: relative;
+        }
+        .paired::after {
+            content: "✓✓ 配对成功 ✓✓";
+            font-size: 0.7rem;
+            background: #4caf50;
+            color: white;
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 30px;
+            padding: 2px 8px;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            .sock-card { width: 140px; padding: 10px 5px; }
+            .sock-svg { width: 80px; height: 80px; }
+            .score-box { font-size: 1.3rem; }
+        }
+        @media (max-width: 550px) {
+            .game-container { padding: 15px; }
+            .socks-grid { gap: 12px; }
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #aa9274;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🧦 袜子配对小行家 🧦</h1>
+    <div class="sub">颜色 · 大小 · 图案 → 找到一模一样的好朋友</div>
+
+    <div class="info-panel">
+        <div class="score-box">🏆 配对得分: <span id="pairScore">0</span></div>
+        <div class="message-area" id="statusMsg">✨ 点击袜子，再点击另一只配对 ✨</div>
+        <div class="btn-group">
+            <button class="game-btn" id="resetGameBtn">🔄 新的一局</button>
+            <button class="game-btn" id="soundRuleBtn">🔊 游戏说明</button>
+        </div>
+    </div>
+
+    <div class="socks-grid" id="socksContainer"></div>
+    <footer>💡 提示：注意颜色、大小、图案要完全一样！有的图案很相近，要仔细看哦~ 配对成功/失败有声音提示</footer>
+</div>
+
+<script>
+    // 袜子数据 (8对，含模糊/易混淆)
+    const socksLibrary = [
+        { id: 0, pairId: 0, color: "#e34234", sizeLabel: "大号", patternType: "heart", patternDesc: "❤️ 大红爱心", difficulty: "简单" },
+        { id: 1, pairId: 0, color: "#e34234", sizeLabel: "大号", patternType: "heart", patternDesc: "❤️ 大红爱心", difficulty: "简单" },
+        { id: 2, pairId: 1, color: "#3a86ff", sizeLabel: "小号", patternType: "wave", patternDesc: "🌊 蓝色波浪", difficulty: "简单" },
+        { id: 3, pairId: 1, color: "#3a86ff", sizeLabel: "小号", patternType: "wave", patternDesc: "🌊 蓝色波浪", difficulty: "简单" },
+        { id: 4, pairId: 2, color: "#ffd166", sizeLabel: "中号", patternType: "dots", patternDesc: "⚪ 黄色圆点", difficulty: "中等" },
+        { id: 5, pairId: 2, color: "#ffd166", sizeLabel: "中号", patternType: "dots", patternDesc: "⚪ 黄色圆点", difficulty: "中等" },
+        { id: 6, pairId: 3, color: "#70e000", sizeLabel: "中号", patternType: "plaid", patternDesc: "🟩 绿格纹", difficulty: "中等" },
+        { id: 7, pairId: 3, color: "#70e000", sizeLabel: "中号", patternType: "plaid", patternDesc: "🟩 绿格纹", difficulty: "中等" },
+        { id: 8, pairId: 4, color: "#b980f0", sizeLabel: "大号", patternType: "starBlur", patternDesc: "✨ 模糊星星", difficulty: "挑战" },
+        { id: 9, pairId: 4, color: "#b980f0", sizeLabel: "大号", patternType: "starBlur", patternDesc: "✨ 模糊星星", difficulty: "挑战" },
+        { id: 10, pairId: 5, color: "#c084fc", sizeLabel: "中号", patternType: "squareBlur", patternDesc: "◻️ 模糊方块", difficulty: "挑战" },
+        { id: 11, pairId: 5, color: "#c084fc", sizeLabel: "中号", patternType: "squareBlur", patternDesc: "◻️ 模糊方块", difficulty: "挑战" },
+        { id: 12, pairId: 6, color: "#fb8500", sizeLabel: "中号", patternType: "rings", patternDesc: "⭕ 橙色环纹", difficulty: "中等" },
+        { id: 13, pairId: 6, color: "#fb8500", sizeLabel: "中号", patternType: "rings", patternDesc: "⭕ 橙色环纹", difficulty: "中等" },
+        { id: 14, pairId: 7, color: "#9ca3af", sizeLabel: "小号", patternType: "snowBlur", patternDesc: "❄️ 模糊雪花", difficulty: "挑战" },
+        { id: 15, pairId: 7, color: "#9ca3af", sizeLabel: "小号", patternType: "snowBlur", patternDesc: "❄️ 模糊雪花", difficulty: "挑战" }
+    ];
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function getSockSVG(sock) {
+        const baseColor = sock.color;
+        const pattern = sock.patternType;
+        const sockOutline = `<path d="M42,25 L42,70 C42,85 58,90 70,88 C82,86 88,78 88,65 L88,45 C88,38 84,30 76,27 L70,25 L62,23 L50,23 L42,25Z" fill="${baseColor}" stroke="#5c3e1f" stroke-width="2.5" />`;
+        const cuff = `<rect x="42" y="18" width="46" height="12" rx="6" fill="#f5e6d3" stroke="#c9aa7b" stroke-width="2"/>`;
+        let patternElements = "";
+        const blurId = `blur-${sock.id}`;
+        const enableBlur = (pattern === "starBlur" || pattern === "squareBlur" || pattern === "snowBlur");
+        let filterDef = "";
+        if(enableBlur) filterDef = `<filter id="${blurId}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="1.8"/></filter>`;
+        
+        switch(pattern) {
+            case "heart": patternElements = `<path d="M65,52 L62,48 C58,43 52,44 52,50 C52,56 62,64 65,68 C68,64 78,56 78,50 C78,44 72,43 68,48 Z" fill="#ffb3c6" stroke="#d6336c" stroke-width="1.2"/>`; break;
+            case "wave": patternElements = `<path d="M52,60 Q57,54 62,60 T72,60" fill="none" stroke="#fcfcfc" stroke-width="3" stroke-linecap="round"/><path d="M52,68 Q57,62 62,68 T72,68" fill="none" stroke="#fcfcfc" stroke-width="3" stroke-linecap="round"/>`; break;
+            case "dots": patternElements = `<circle cx="58" cy="50" r="5" fill="#fff" opacity="0.8"/><circle cx="72" cy="56" r="4.5" fill="#fff" opacity="0.8"/><circle cx="62" cy="65" r="5.5" fill="#fff" opacity="0.8"/><circle cx="76" cy="46" r="4" fill="#fff" opacity="0.7"/>`; break;
+            case "plaid": patternElements = `<rect x="52" y="44" width="28" height="28" fill="none" stroke="#2e6b2f" stroke-width="2" stroke-dasharray="3 3"/><line x1="52" y1="52" x2="80" y2="52" stroke="#2e6b2f" stroke-width="2" /><line x1="66" y1="44" x2="66" y2="72" stroke="#2e6b2f" stroke-width="2"/>`; break;
+            case "starBlur": patternElements = `<g filter="url(#${blurId})"><polygon points="65,45 68,52 76,52 69,57 71,65 65,60 59,65 61,57 54,52 62,52" fill="#ffeda3" stroke="#ffb347" stroke-width="1"/></g>`; break;
+            case "squareBlur": patternElements = `<g filter="url(#${blurId})"><rect x="56" y="48" width="20" height="20" fill="#ffffffaa" stroke="#e0aaff" stroke-width="2" rx="3"/><rect x="62" y="54" width="8" height="8" fill="#c77dff"/></g>`; break;
+            case "rings": patternElements = `<circle cx="65" cy="57" r="8" fill="none" stroke="#ffb347" stroke-width="2.5"/><circle cx="65" cy="57" r="4" fill="none" stroke="#fff" stroke-width="1.5"/><circle cx="73" cy="50" r="4" fill="none" stroke="#ffb347" stroke-width="2"/>`; break;
+            case "snowBlur": patternElements = `<g filter="url(#${blurId})"><path d="M65,48 L67,52 L71,52 L68,55 L69,59 L65,57 L61,59 L62,55 L59,52 L63,52 Z" fill="#ffffffd9"/><circle cx="75" cy="62" r="3" fill="#ffffffcc"/><circle cx="55" cy="64" r="3.5" fill="#ffffffcc"/></g>`; break;
+            default: patternElements = `<circle cx="65" cy="55" r="7" fill="#fff" />`;
+        }
+        let sizeMark = "";
+        if(sock.sizeLabel === "大号") sizeMark = `<text x="65" y="82" font-size="8" fill="#00000080" text-anchor="middle">📏 大</text>`;
+        else if(sock.sizeLabel === "小号") sizeMark = `<text x="65" y="82" font-size="8" fill="#00000080" text-anchor="middle">📏 小</text>`;
+        else sizeMark = `<text x="65" y="82" font-size="8" fill="#00000080" text-anchor="middle">📏 中</text>`;
+        
+        return `<svg viewBox="0 0 100 100" class="sock-svg" xmlns="http://www.w3.org/2000/svg"><defs>${filterDef}</defs>${sockOutline}${cuff}${patternElements}${sizeMark}</svg>`;
+    }
+
+    // 声音系统
+    let audioCtx = null, audioAllowed = false;
+    function initAudio() { if (audioCtx && audioCtx.state !== 'closed') return audioCtx; audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+    function playSuccessSound() {
+        if (!audioAllowed) { initAudio(); if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume().then(() => { audioAllowed = true; generateSuccessTone(); }); return; } audioAllowed = true; }
+        if (audioCtx && audioCtx.state === 'running') generateSuccessTone(); else if (audioCtx) audioCtx.resume().then(() => generateSuccessTone());
+    }
+    function generateSuccessTone() { if (!audioCtx || audioCtx.state !== 'running') return; const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sine'; osc.frequency.setValueAtTime(880, now); osc.frequency.exponentialRampToValueAtTime(1320, now + 0.2); gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5); osc.start(); osc.stop(now + 0.45); }
+    function playFailSound() {
+        if (!audioAllowed) { initAudio(); if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume().then(() => { audioAllowed = true; generateFailTone(); }); return; } audioAllowed = true; }
+        if (audioCtx && audioCtx.state === 'running') generateFailTone(); else if (audioCtx) audioCtx.resume().then(() => generateFailTone());
+    }
+    function generateFailTone() { if (!audioCtx || audioCtx.state !== 'running') return; const now = audioCtx.currentTime; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(330, now); osc.frequency.exponentialRampToValueAtTime(220, now + 0.2); gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4); osc.start(); osc.stop(now + 0.38); }
+    function playGameInstructions() { if (window.speechSynthesis) { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance("游戏说明：请找出两只完全一样的袜子好朋友。需要颜色、大小和图案一模一样。图片旁边有文字提示，注意模糊图案和容易混淆的袜子，要仔细观察才能配对成功。点击袜子选中，再点击另一只尝试配对。加油！"); utterance.lang = "zh-CN"; utterance.rate = 0.9; utterance.pitch = 1.1; window.speechSynthesis.speak(utterance); } if (!audioAllowed) { initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().then(()=>{audioAllowed=true;}); } }
+
+    let currentSocks = [], pairedStatus = [], selectedIndex = null, currentScore = 0;
+    const socksContainer = document.getElementById("socksContainer"), pairScoreSpan = document.getElementById("pairScore"), statusMsgDiv = document.getElementById("statusMsg"), resetBtn = document.getElementById("resetGameBtn"), soundRuleBtn = document.getElementById("soundRuleBtn");
+    
+    function renderGame() {
+        socksContainer.innerHTML = "";
+        for(let i = 0; i < currentSocks.length; i++) {
+            const sock = currentSocks[i], isPaired = pairedStatus[i];
+            const cardDiv = document.createElement("div");
+            cardDiv.className = "sock-card";
+            if(isPaired) cardDiv.classList.add("paired");
+            if(selectedIndex === i && !isPaired) cardDiv.classList.add("selected");
+            const svgContent = getSockSVG(sock);
+            const attrsDiv = document.createElement("div");
+            attrsDiv.className = "sock-attrs";
+            let colorName = sock.color==="#e34234"?"红色":sock.color==="#3a86ff"?"蓝色":sock.color==="#ffd166"?"黄色":sock.color==="#70e000"?"绿色":sock.color==="#b980f0"?"紫色":sock.color==="#c084fc"?"浅紫":sock.color==="#fb8500"?"橙色":sock.color==="#9ca3af"?"灰色":"彩色";
+            attrsDiv.innerHTML = `🎨 ${colorName} · ${sock.sizeLabel} · ${sock.patternDesc}`;
+            if(sock.difficulty === "挑战") { const badge = document.createElement("div"); badge.className = "difficulty-badge"; badge.innerText = "🔍 易混淆 仔细看!"; attrsDiv.appendChild(badge); }
+            cardDiv.appendChild(new DOMParser().parseFromString(svgContent, "image/svg+xml").documentElement);
+            cardDiv.appendChild(attrsDiv);
+            cardDiv.addEventListener("click", (function(idx) { return function() { onSockClick(idx); }; })(i));
+            socksContainer.appendChild(cardDiv);
+        }
+        pairScoreSpan.innerText = currentScore;
+        const pairedCount = pairedStatus.filter(v => v === true).length;
+        if(pairedCount === currentSocks.length && currentSocks.length > 0) statusMsgDiv.innerHTML = "🎉 太棒了！所有袜子都找到好朋友啦！ 🎉";
+        else if(selectedIndex !== null) statusMsgDiv.innerHTML = "👉 已选中一只袜子，再点击它的好朋友配对 👈";
+        else statusMsgDiv.innerHTML = "✨ 点击袜子，再点击另一只配对 ✨";
+    }
+    
+    function onSockClick(clickedIdx) {
+        if (!audioAllowed) { initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().then(()=>{audioAllowed=true;}); else if (audioCtx && audioCtx.state === 'running') audioAllowed=true; else { initAudio(); audioAllowed=true; } }
+        if(pairedStatus[clickedIdx]) { if(selectedIndex !== null) { selectedIndex = null; statusMsgDiv.innerHTML = "⭐ 刚才那只已经配对啦，重新选择吧"; renderGame(); } return; }
+        if(selectedIndex === null) { selectedIndex = clickedIdx; renderGame(); return; }
+        const firstSock = currentSocks[selectedIndex], secondSock = currentSocks[clickedIdx];
+        if(selectedIndex === clickedIdx) { selectedIndex = null; statusMsgDiv.innerHTML = "👣 不能和自己配对，请重新选择另一只袜子"; renderGame(); return; }
+        if(firstSock.pairId === secondSock.pairId) {
+            pairedStatus[selectedIndex] = true; pairedStatus[clickedIdx] = true; currentScore++; selectedIndex = null; statusMsgDiv.innerHTML = "✅ 配对成功！ 好棒！ ✅"; playSuccessSound(); renderGame();
+            if(pairedStatus.every(v=>v===true)) statusMsgDiv.innerHTML = "🏆 完美完成！你真是配对高手！ 🏆";
+        } else {
+            statusMsgDiv.innerHTML = "❌ 不对哦！这两只袜子不是好朋友，再仔细观察颜色、大小和图案吧！ ❌"; selectedIndex = null; playFailSound(); renderGame();
+        }
+    }
+    
+    function initNewGame() { let freshSocks = socksLibrary.map(s => ({ ...s })); currentSocks = shuffleArray(freshSocks); pairedStatus = new Array(currentSocks.length).fill(false); selectedIndex = null; currentScore = 0; renderGame(); statusMsgDiv.innerHTML = "🆕 新游戏！把每一双袜子都正确配对吧~ 注意模糊图案细节 🧦"; }
+    resetBtn.addEventListener("click", () => initNewGame());
+    soundRuleBtn.addEventListener("click", () => { playGameInstructions(); if (!audioAllowed) { initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().then(()=>{audioAllowed=true;}); } });
+    initNewGame();
+</script>
+</body>
+</html>
